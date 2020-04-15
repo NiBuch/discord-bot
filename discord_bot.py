@@ -2,6 +2,7 @@
 
 import configparser
 import json
+import numpy as np
 import random
 import regex
 import requests
@@ -53,6 +54,15 @@ async def eight_ball(context):
                 aliases = ["d", "roll"],
                 pass_context = True)
 async def dice(context):
+    dice = context.message.content.split()[1]
+    dice = dice.split("d")
+    if not dice[0]:
+        dice[0] = 1
+    roll = np.random.randint(int(dice[1]), size=int(dice[0]))
+    roll = ", ".join(list(roll))
+
+    channel = context.channel
+    await channel.send(context.author.mention + ": " + roll)
 
 
 @client.command(name = "pokedex",
@@ -61,7 +71,9 @@ async def dice(context):
                 aliases = ["elm", "oak", "poke"],
                 pass_context = True)
 async def pokedex(context):
-    uri = "https://pokeapi.co/api/v2/pokemon-species/"
+    poke = context.message.content.split()[1]
+
+    uri = "https://pokeapi.co/api/v2/pokemon-species/" + poke
     resp = requests.get(uri)
 
     data = resp.text
