@@ -4,7 +4,7 @@ import configparser
 import json
 import numpy as np
 import random
-import regex
+import re
 import requests
 from discord import Game
 from discord.ext.commands import Bot
@@ -53,13 +53,13 @@ async def eight_ball(context):
                 brief = "Roll a dice.",
                 aliases = ["d", "roll"],
                 pass_context = True)
-async def dice(context):
-    dice = context.message.content.split()[1]
-    dice = dice.split("d")
-    if not dice[0]:
-        dice[0] = 1
-    roll = np.random.randint(int(dice[1]), size=int(dice[0]))
-    roll = ", ".join(list(roll))
+async def dice(context, dice: str):
+    try:
+        rolls, sides = map(int, dice.split("d"))
+    except Exception:
+        print("## Error parsing", dice)
+
+    roll = ', '.join(str(random.randint(1, sides)) for r in range(rolls))
 
     channel = context.channel
     await channel.send(context.author.mention + ": " + roll)
@@ -81,5 +81,26 @@ async def pokedex(context):
     data = [x['flavor_text'] for x in data if x['language']['name'] == 'en']
     channel = context.channel
     await channel.send(context.author.mention + ": " + random.choice(data))
+
+
+#########################
+### Status/Diagnostic ###
+#########################
+
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+
+    print("Recv: {0}".format(message.content))
+
+
+@client.event
+async def on_ready():
+    print('Logged in as')
+    print('  Name:\t' + client.user.name)
+    print('  ID:\t' + str(client.user.id))
+    print('--------------------')
+
 
 client.run(TOKEN)
